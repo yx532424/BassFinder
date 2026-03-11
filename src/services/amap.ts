@@ -184,18 +184,26 @@ export async function reverseGeocode(lat: number, lng: number): Promise<string> 
   try {
     const AMap = await loadAMap();
     
+    // 确保 Geocoder 已加载
+    await loadPlugin('AMap.Geocoder');
+    
     return new Promise((resolve) => {
       const geocoder = new AMap.Geocoder({
         radius: 1000,
         extensions: 'base',
+        city: '全国',
       });
 
+      // 参数顺序是 [lng, lat] 而不是 [lat, lng]
       geocoder.getAddress([lng, lat], (status: string, result: any) => {
+        console.log('[AMap] 逆地理编码结果:', status, result);
         if (status === 'complete' && result.regeocode) {
           const address = result.regeocode.addressComponent;
           const city = address.city || address.province || '未知';
+          console.log('[AMap] 获取到城市:', city);
           resolve(city);
         } else {
+          console.warn('[AMap] 逆地理编码失败:', result?.info);
           resolve('未知地点');
         }
       });
@@ -204,6 +212,18 @@ export async function reverseGeocode(lat: number, lng: number): Promise<string> 
     console.error('[AMap] 逆地理编码失败:', error);
     return '未知地点';
   }
+}
+
+/**
+ * 加载插件
+ */
+async function loadPlugin(pluginName: string): Promise<void> {
+  const AMap = await loadAMap();
+  return new Promise((resolve, reject) => {
+    AMap.plugin(pluginName, () => {
+      resolve();
+    });
+  });
 }
 
 /**
