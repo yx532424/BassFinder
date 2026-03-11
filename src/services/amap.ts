@@ -1,11 +1,8 @@
 /**
  * 地图服务 - 高德地图
- * 使用 AMapJS 进行加载
+ * 使用官方直接加载方式，确保移动端兼容性
  */
 
-import { AMapLoader } from 'amap-js';
-
-// 全局 AMap 加载器
 declare global {
   interface Window {
     AMap: any;
@@ -16,26 +13,46 @@ declare global {
 
 let amapInstance: any = null;
 let mapInstance: any = null;
-let loader: any = null;
+let loadPromise: Promise<any> | null = null;
 
 /**
- * 获取 AMapLoader 实例
- * 使用 1.4.15 版本以确保移动端兼容性
+ * 动态加载高德地图 SDK
  */
-function getLoader(): any {
-  if (!loader) {
-    loader = new AMapLoader({
-      key: '840bef19b8611f8b7054ddbba4bc6d32',
-      version: '1.4.15',  // 使用稳定版本
-      plugins: [
-        'AMap.Scale',
-        'AMap.ToolBar',
-        'AMap.Geolocation',
-        'AMap.Geocoder',
-      ],
-    });
-  }
-  return loader;
+function loadAMapScript(): Promise<any> {
+  return new Promise((resolve, reject) => {
+    // 如果已加载，直接返回
+    if (window.AMap) {
+      console.log('[AMap] 已存在，直接使用');
+      amapInstance = window.AMap;
+      resolve(window.AMap);
+      return;
+    }
+
+    // 设置安全配置（v2.0需要）
+    window._AMapSecurityConfig = {
+      securityJsCode: '',
+    };
+
+    // 动态创建 script 标签
+    const script = document.createElement('script');
+    // 使用 1.4.15 稳定版本
+    script.src = 'https://webapi.amap.com/maps?v=1.4.15&key=840bef19b8611f8b7054ddbba4bc6d32&plugin=AMap.Scale,AMap.ToolBar,AMap.Geolocation,AMap.Geocoder';
+    script.async = true;
+    script.charset = 'utf-8';
+    
+    script.onload = () => {
+      console.log('[AMap] 脚本加载成功, 版本:', window.AMap?.version);
+      amapInstance = window.AMap;
+      resolve(window.AMap);
+    };
+    
+    script.onerror = (error) => {
+      console.error('[AMap] 脚本加载失败:', error);
+      reject(new Error('高德地图加载失败'));
+    };
+
+    document.head.appendChild(script);
+  });
 }
 
 /**
@@ -44,16 +61,10 @@ function getLoader(): any {
 export async function loadAMap(): Promise<any> {
   if (amapInstance) return amapInstance;
 
-  try {
-    const amapLoader = getLoader();
-    const result = await amapLoader.load();
-    amapInstance = result.AMap;
-    console.log('[AMapJS] 高德地图加载成功, 版本:', amapInstance.version);
-    return amapInstance;
-  } catch (error) {
-    console.error('[AMapJS] 加载失败:', error);
-    throw error;
-  }
+  if (loadPromise) return loadPromise;
+  
+  loadPromise = loadAMapScript();
+  return loadPromise;
 }
 
 /**
@@ -63,12 +74,16 @@ export async function initMap(container: HTMLElement, center?: [number, number])
   const defaultLng = center ? center[0] : 120.3014;
   const defaultLat = center ? center[1] : 31.5747;
 
-  console.log('[AMapJS] 初始化地图，容器尺寸:', container.offsetHeight, 'x', container.offsetWidth);
+  console.log('[AMap] 初始化地图，容器尺寸:', container.offsetHeight, 'x', container.offsetWidth);
 
   // 清理旧地图
   if (mapInstance) {
-    console.log('[AMapJS] 清理旧地图');
-    mapInstance.destroy();
+    console.log('[AMap] 清理旧地图');
+    try {
+      mapInstance.destroy();
+    } catch (e) {
+      console.warn('[AMap] 销毁旧地图失败:', e);
+    }
     mapInstance = null;
   }
 
@@ -79,7 +94,7 @@ export async function initMap(container: HTMLElement, center?: [number, number])
   try {
     // 加载 AMap
     const AMap = await loadAMap();
-    console.log('[AMapJS] SDK 加载成功');
+    console.log('[AMap] SDK 加载成功');
 
     // 创建地图
     mapInstance = new AMap.Map(container, {
@@ -88,9 +103,10 @@ export async function initMap(container: HTMLElement, center?: [number, number])
       viewMode: '2D',
       mapStyle: 'amap://styles/dark',
       showIndoorMap: false,
+      resizeEnable: true,  // 窗口大小变化时自动调整
     });
 
-    console.log('[AMapJS] 地图创建成功');
+    console.log('[AMap] 地图创建成功');
 
     // 添加控件
     mapInstance.addControl(new AMap.Scale());
@@ -101,12 +117,12 @@ export async function initMap(container: HTMLElement, center?: [number, number])
 
     // 地图加载完成
     mapInstance.on('complete', () => {
-      console.log('[AMapJS] 地图加载完成');
+      console.log('[AMap] 地图加载完成');
     });
 
     return mapInstance;
   } catch (error) {
-    console.error('[AMapJS] 初始化失败:', error);
+    console.error('[AMap] 初始化失败:', error);
     throw error;
   }
 }
@@ -140,6 +156,9 @@ export function getUserLocation(): Promise<{ lng: number; lat: number }> {
         enableHighAccuracy: true,
         timeout: 10000,
         maximumAge: 300000,
+        showButton: false,  // 隐藏默认定位按钮
+        showMarker: false,
+        showCircle: true,
       });
 
       geolocation.getCurrentPosition((status: string, result: any) => {
@@ -182,7 +201,7 @@ export async function reverseGeocode(lat: number, lng: number): Promise<string> 
       });
     });
   } catch (error) {
-    console.error('[AMapJS] 逆地理编码失败:', error);
+    console.error('[AMap] 逆地理编码失败:', error);
     return '未知地点';
   }
 }

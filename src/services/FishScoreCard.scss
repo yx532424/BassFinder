@@ -1,0 +1,295 @@
+// ============================================
+// 鱼情分析卡片
+// ============================================
+
+.fish-score-card {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-height: 90vh;
+  background: linear-gradient(180deg, rgba(26, 32, 44, 0.98) 0%, rgba(15, 23, 42, 0.98) 100%);
+  border-radius: 24px 24px 0 0;
+  overflow: hidden;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: none;
+  
+  // 过渡动画
+  transition: height 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  
+  // 拖拽时禁用过渡
+  &.dragging {
+    transition: none;
+    z-index: 100;
+    
+    .fish-score-card__handle {
+      background: rgba(0, 212, 170, 0.15);
+    }
+    
+    .handle-bar {
+      background: rgba(255, 255, 255, 0.3);
+      width: 56px;
+    }
+  }
+  
+  // 收起状态
+  &.collapsed {
+    .fish-score-card__content {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(20px);
+    }
+    
+    .fish-score-card__hint {
+      opacity: 0;
+    }
+  }
+
+  // 顶部渐变遮罩
+  &__gradient-mask {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: linear-gradient(180deg, rgba(21, 31, 40, 0.6) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 5;
+  }
+
+  // 拖拽区域
+  &__handle-area {
+    position: relative;
+    z-index: 10;
+    padding: 12px 0 8px;
+    cursor: grab;
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+    flex-shrink: 0;
+    
+    &:active {
+      cursor: grabbing;
+    }
+  }
+
+  // 提示
+  &__hint {
+    position: absolute;
+    top: -32px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: rgba(0, 212, 170, 0.12);
+    border: 1px solid rgba(0, 212, 170, 0.25);
+    border-radius: 20px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    white-space: nowrap;
+    
+    &.visible {
+      opacity: 1;
+      animation: hintPulse 2s ease-in-out infinite;
+    }
+    
+    .hint-icon {
+      font-size: 12px;
+    }
+    
+    .hint-text {
+      font-size: 12px;
+      color: #00d4aa;
+      font-weight: 500;
+    }
+  }
+
+  // 手柄
+  &__handle {
+    display: flex;
+    justify-content: center;
+    padding: 4px 0;
+    transition: background 0.2s ease;
+    
+    .handle-bar {
+      width: 44px;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      
+      .handle-grip {
+        display: flex;
+        gap: 4px;
+        
+        span {
+          width: 3px;
+          height: 3px;
+          background: rgba(255, 255, 255, 0.35);
+          border-radius: 50%;
+        }
+      }
+    }
+  }
+
+  // 内容
+  &__content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    position: relative;
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    padding: 0 16px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+  }
+
+  // 纹理
+  &__texture {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+      radial-gradient(circle at 20% 30%, rgba(0, 212, 170, 0.03) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(108, 92, 231, 0.03) 0%, transparent 50%);
+    pointer-events: none;
+    border-radius: 24px 24px 0 0;
+  }
+
+  // 装饰线
+  &__accent-line {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50px;
+    height: 3px;
+    background: linear-gradient(90deg, #00d4aa, #00a080);
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 0 12px rgba(0, 212, 170, 0.5);
+  }
+
+  // 内部
+  &__inner {
+    position: relative;
+    z-index: 1;
+  }
+
+  // 头部
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding-top: 8px;
+    position: relative;
+    
+    .header-icon {
+      font-size: 20px;
+    }
+    
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+      background: linear-gradient(90deg, #00d4aa, #00f5c4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header-badge {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      background: rgba(0, 212, 170, 0.1);
+      border: 1px solid rgba(0, 212, 170, 0.2);
+      border-radius: 12px;
+      
+      .badge-dot {
+        width: 6px;
+        height: 6px;
+        background: #00c853;
+        border-radius: 50%;
+        animation: badgePulse 2s ease-in-out infinite;
+      }
+      
+      .badge-text {
+        font-size: 10px;
+        color: #00d4aa;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+    }
+  }
+
+  // 指标网格
+  &__metrics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  // 底部
+  &__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    
+    .footer-location, .footer-time {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      
+      .location-icon, .time-icon {
+        font-size: 12px;
+        opacity: 0.7;
+      }
+      
+      .location-text, .time-text {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.5);
+      }
+    }
+  }
+}
+
+// 动画
+@keyframes hintPulse {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
+@keyframes badgePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes cardEnter {
+  0% { transform: translateY(100%); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+// 入场动画
+.fish-score-card {
+  animation: cardEnter 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
