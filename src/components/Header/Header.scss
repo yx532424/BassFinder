@@ -1,0 +1,162 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  @include glass;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 $space-4;
+  z-index: $z-header;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  @include safe-area(top);
+
+  // 底部发光线条
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, 
+      transparent 0%, 
+      rgba(0, 212, 170, 0.5) 50%, 
+      transparent 100%
+    );
+  }
+
+  &__left {
+    display: flex;
+    align-items: center;
+    gap: $space-3;
+  }
+
+  &__logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, $color-primary 0%, #00a8cc 100%);
+    border-radius: $radius-md;
+    box-shadow: 0 4px 16px rgba(0, 212, 170, 0.4);
+    position: relative;
+    overflow: hidden;
+    
+    // 光泽效果
+    &::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        45deg,
+        transparent 40%,
+        rgba(255, 255, 255, 0.2) 50%,
+        transparent 60%
+      );
+      animation: logo-shine 3s ease-in-out infinite;
+    }
+
+    .logo-icon {
+      font-size: 22px;
+      position: relative;
+      z-index: 1;
+    }
+  }
+
+  &__location {
+    display: flex;
+    align-items: center;
+    gap: $space-1;
+    padding: 6px 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: $radius-full;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+
+    .location-icon {
+      color: $color-accent;
+      flex-shrink: 0;
+    }
+
+    .location-name {
+      font-family: $font-body;
+      font-size: $text-sm;
+      font-weight: $font-medium;
+      color: $text-primary;
+      max-width: 140px;
+      @include text-ellipsis;
+    }
+  }
+
+  &__right {
+    display: flex;
+    align-items: center;
+    gap: $space-2;
+  }
+
+  &__btn {
+    @include flex-center;
+    width: 40px;
+    height: 40px;
+    border-radius: $radius-md;
+    background: linear-gradient(135deg, rgba(28, 40, 51, 0.8) 0%, rgba(21, 31, 40, 0.6) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    color: $text-primary;
+    transition: all $transition-base;
+    position: relative;
+    overflow: hidden;
+
+    // 悬停光效
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(0, 212, 170, 0.1) 0%, transparent 100%);
+      opacity: 0;
+      transition: opacity $transition-base;
+    }
+
+    &:hover:not(:disabled)::before {
+      opacity: 1;
+    }
+
+    &:hover:not(:disabled) {
+      border-color: rgba($color-primary, 0.5);
+      box-shadow: 0 0 16px rgba(0, 212, 170, 0.3);
+      transform: translateY(-1px);
+    }
+
+    &:active:not(:disabled) {
+      transform: scale(0.95) translateY(0);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .spin {
+      animation: spin 1s linear infinite;
+    }
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes logo-shine {
+  0%, 100% {
+    transform: translateX(-30%) rotate(45deg);
+  }
+  50% {
+    transform: translateX(30%) rotate(45deg);
+  }
+}

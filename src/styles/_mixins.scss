@@ -1,0 +1,216 @@
+// ============================================
+// 混入 (Mixins)
+// ============================================
+
+// 响应式断点
+@mixin mobile {
+  @media (max-width: #{$breakpoint-lg - 1px}) {
+    @content;
+  }
+}
+
+@mixin tablet {
+  @media (min-width: $breakpoint-lg) {
+    @content;
+  }
+}
+
+// 弹性盒子
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@mixin flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+// 毛玻璃效果
+@mixin glass {
+  background: rgba(21, 31, 40, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+// 发光边框
+@mixin glow-border($color: $color-primary) {
+  border: 1px solid rgba($color, 0.3);
+  box-shadow: 0 0 12px rgba($color, 0.2), inset 0 0 12px rgba($color, 0.05);
+}
+
+// 按钮基础样式
+@mixin button-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: $space-2;
+  height: 44px;
+  padding: 0 $space-5;
+  border: none;
+  border-radius: $radius-md;
+  font-family: $font-body;
+  font-size: $text-base;
+  font-weight: $font-medium;
+  cursor: pointer;
+  transition: all $transition-fast;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+
+  &:active {
+    transform: scale(0.96);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+@mixin button-primary {
+  @include button-base;
+  background: linear-gradient(135deg, $color-primary, $color-primary-dark);
+  color: $bg-primary;
+
+  &:hover:not(:disabled) {
+    background: linear-gradient(135deg, $color-primary-light, $color-primary);
+    box-shadow: $shadow-glow;
+  }
+}
+
+@mixin button-secondary {
+  @include button-base;
+  background: $bg-card;
+  color: $text-primary;
+  border: 1px solid $border-color;
+
+  &:hover:not(:disabled) {
+    border-color: $color-primary;
+    box-shadow: $shadow-glow;
+  }
+}
+
+@mixin button-ghost {
+  @include button-base;
+  background: transparent;
+  color: $text-secondary;
+
+  &:hover:not(:disabled) {
+    color: $text-primary;
+    background: rgba(255, 255, 255, 0.05);
+  }
+}
+
+// 卡片样式
+@mixin card {
+  background: $bg-card;
+  border-radius: $radius-lg;
+  border: 1px solid $border-color;
+}
+
+@mixin card-elevated {
+  @include card;
+  @include glass;
+  box-shadow: $shadow-lg;
+}
+
+// 文字省略
+@mixin text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@mixin text-ellipsis-multiline($lines: 2) {
+  display: -webkit-box;
+  -webkit-line-clamp: $lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// 涟漪效果
+@mixin ripple($color: rgba(255, 255, 255, 0.1)) {
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, $color 10%, transparent 10.01%);
+    background-size: 1000% 1000%;
+    background-position: center;
+    transform: translate(-50%, -50%) scale(0);
+    transition: transform 0.5s, opacity 0.5s;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  &:active::after {
+    transform: translate(-50%, -50%) scale(2);
+    opacity: 1;
+    transition: transform 0s;
+  }
+}
+
+// 安全区适配 (刘海屏)
+@mixin safe-area($position: all) {
+  @if $position == top {
+    padding-top: env(safe-area-inset-top);
+  } @else if $position == bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  } @else if $position == left {
+    padding-left: env(safe-area-inset-left);
+  } @else if $position == right {
+    padding-right: env(safe-area-inset-right);
+  } @else {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+// 滚动条隐藏
+@mixin hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+// 输入框样式
+@mixin input-base {
+  width: 100%;
+  height: 48px;
+  padding: 0 $space-4;
+  background: $bg-elevated;
+  border: 1px solid $border-color;
+  border-radius: $radius-md;
+  color: $text-primary;
+  font-family: $font-body;
+  font-size: $text-base;
+  transition: border-color $transition-fast, box-shadow $transition-fast;
+
+  &::placeholder {
+    color: $text-muted;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: $color-primary;
+    box-shadow: 0 0 0 3px rgba($color-primary, 0.15);
+  }
+}

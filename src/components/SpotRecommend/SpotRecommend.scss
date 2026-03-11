@@ -1,0 +1,112 @@
+.spot-recommend {
+  margin-top: $space-5;
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: $space-2;
+    font-family: $font-display;
+    font-size: $text-sm;
+    font-weight: $font-semibold;
+    color: $text-primary;
+    margin-bottom: $space-3;
+    padding-bottom: $space-2;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+
+    .title-icon {
+      font-size: 16px;
+      filter: drop-shadow(0 0 4px rgba(255, 107, 53, 0.5));
+    }
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: $space-2;
+  }
+}
+
+.spot-item {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.08) 0%, rgba(21, 31, 40, 0.4) 100%);
+  border-radius: $radius-md;
+  padding: $space-3;
+  border: 1px solid rgba(255, 107, 53, 0.1);
+  animation: spot-enter 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  opacity: 0;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.98);
+    background: linear-gradient(135deg, rgba(255, 107, 53, 0.12) 0%, rgba(21, 31, 40, 0.6) 100%);
+  }
+
+  &__icon {
+    @include flex-center;
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, rgba(255, 107, 53, 0.2) 0%, rgba(247, 147, 30, 0.1) 100%);
+    border-radius: $radius-sm;
+    color: $color-accent;
+    flex-shrink: 0;
+    position: relative;
+    
+    // 脉冲光环
+    &::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: $radius-sm;
+      border: 1px solid rgba($color-accent, 0.3);
+      animation: spot-pulse 2s ease-in-out infinite;
+    }
+    
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+  }
+
+  &__info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__name {
+    font-size: $text-sm;
+    font-weight: $font-medium;
+    color: $text-primary;
+    @include text-ellipsis;
+  }
+
+  &__reason {
+    font-size: $text-xs;
+    color: $text-muted;
+    margin-top: 2px;
+    @include text-ellipsis-multiline(1);
+  }
+}
+
+@keyframes spot-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spot-pulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.1);
+  }
+}
