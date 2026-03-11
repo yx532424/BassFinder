@@ -20,12 +20,13 @@ let loader: any = null;
 
 /**
  * 获取 AMapLoader 实例
+ * 使用 1.4.15 版本以确保移动端兼容性
  */
 function getLoader(): any {
   if (!loader) {
     loader = new AMapLoader({
       key: '840bef19b8611f8b7054ddbba4bc6d32',
-      version: '2.0',
+      version: '1.4.15',  // 使用稳定版本
       plugins: [
         'AMap.Scale',
         'AMap.ToolBar',
