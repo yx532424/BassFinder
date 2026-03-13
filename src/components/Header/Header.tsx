@@ -11,6 +11,7 @@ interface HeaderProps {
   signInDays?: number;
   onUserClick?: () => void;
   onSignInClick?: () => void;
+  offlineMode?: boolean;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -22,9 +23,16 @@ const Header: React.FC<HeaderProps> = ({
   signInDays = 0,
   onUserClick,
   onSignInClick,
+  offlineMode = false,
 }) => {
   return (
     <header className="header">
+      {/* 离线模式提示 */}
+      {offlineMode && (
+        <div className="offline-badge">
+          📴 离线模式
+        </div>
+      )}
       <div className="header__left">
         <div className="header__logo">
           <span className="logo-icon">🦈</span>

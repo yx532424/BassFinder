@@ -4,6 +4,7 @@ import { getWeatherData, estimateWaterTemp } from '@/services/weather';
 import { reverseGeocode } from '@/services/amap';
 import { calculateFishScore } from '@/utils/fishScoring';
 import * as api from '@/services/api';
+import { getCache, setCache, getCacheList, clearCache } from '@/services/cache';
 import Header from '@/components/Header';
 import MapContainer from '@/components/MapContainer';
 import FishScoreCard from '@/components/FishScoreCard';
@@ -39,6 +40,11 @@ const HomePage: React.FC = () => {
   const [registerForm, setRegisterForm] = useState({ username: '', password: '', nickname: '' });
   const [authError, setAuthError] = useState('');
   const [isAuthLoading, setIsAuthLoading] = useState(false);
+
+  // 缓存状态
+  const [offlineMode, setOfflineMode] = useState(false);
+  const [cacheList, setCacheList] = useState<any[]>([]);
+  const [showCacheModal, setShowCacheModal] = useState(false);
 
   // 检查登录状态
   useEffect(() => {
@@ -166,9 +172,23 @@ const HomePage: React.FC = () => {
       console.log('Fish analysis:', analysis);
       setFishAnalysis(analysis);
 
+      // 保存到缓存
+      setCache(lng, lat, { analysis: analysis, weather: weatherWithWaterTemp, name, timestamp: Date.now() });
+      setOfflineMode(false);
+
     } catch (error) {
       console.error('获取数据失败:', error);
-      setError('获取数据失败，请重试');
+      // 尝试从缓存加载
+      const cached = getCache(lng, lat);
+      if (cached) {
+        setFishAnalysis(cached.analysis);
+        setWeatherData(cached.weather);
+        setLocationName(cached.name);
+        setOfflineMode(true);
+        alert('网络异常，已加载缓存数据');
+      } else {
+        setError('获取数据失败，请重试');
+      }
     } finally {
       setIsLoading(false);
       console.log('Loading finished, fishAnalysis should be set');
