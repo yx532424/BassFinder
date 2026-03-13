@@ -12,6 +12,12 @@ declare global {
   }
 }
 
+// 地图主题配置
+export type MapTheme = 'dark' | 'normal' | 'light' | 'grey' | 'macaron' | 'darkblue';
+
+// 默认主题
+const DEFAULT_THEME: MapTheme = 'normal';
+
 let amapInstance: any = null;
 let mapInstance: any = null;
 let loadPromise: Promise<any> | null = null;
@@ -75,12 +81,27 @@ export async function loadAMap(): Promise<any> {
 
 /**
  * 初始化地图
+ * @param container 地图容器元素
+ * @param center 初始中心点 [lng, lat]
+ * @param theme 地图主题，默认 normal（白色/浅色）
  */
-export async function initMap(container: HTMLElement, center?: [number, number]): Promise<any> {
+export async function initMap(container: HTMLElement, center?: [number, number], theme: MapTheme = DEFAULT_THEME): Promise<any> {
   const defaultLng = center ? center[0] : 120.3014;
   const defaultLat = center ? center[1] : 31.5747;
 
-  console.log('[AMap] 初始化地图，容器尺寸:', container.offsetHeight, 'x', container.offsetWidth);
+  // 主题映射
+  const themeMap: Record<MapTheme, string> = {
+    dark: 'amap://styles/dark',
+    normal: 'amap://styles/normal',
+    light: 'amap://styles/normal', // light 主题可能已废弃，使用 normal
+    grey: 'amap://styles/grey',
+    macaron: 'amap://styles/macaron',
+    darkblue: 'amap://styles/darkblue',
+  };
+
+  const mapStyle = themeMap[theme] || themeMap.normal;
+
+  console.log('[AMap] 初始化地图，主题:', theme, '样式:', mapStyle);
 
   // 清理旧地图
   if (mapInstance) {
@@ -103,11 +124,11 @@ export async function initMap(container: HTMLElement, center?: [number, number])
       zoom: 14,
       center: [defaultLng, defaultLat],
       viewMode: '2D',
-      mapStyle: 'amap://styles/dark',
+      mapStyle: mapStyle,
       showIndoorMap: false,
     });
 
-    console.log('[AMap] 地图创建成功');
+    console.log('[AMap] 地图创建成功，主题:', theme);
 
     // 等待主题加载完成（最多等待 3 秒）
     let themeLoaded = false;
@@ -125,7 +146,7 @@ export async function initMap(container: HTMLElement, center?: [number, number])
         if (!themeLoaded) {
           console.warn('[AMap] 主题加载超时，尝试重新设置主题');
           // 尝试重新设置主题
-          mapInstance.setMapStyle('amap://styles/dark');
+          mapInstance.setMapStyle(mapStyle);
         }
         resolve();
       }, 3000);

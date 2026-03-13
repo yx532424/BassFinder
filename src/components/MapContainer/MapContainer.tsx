@@ -1,17 +1,19 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { initMap, getUserLocation, setMapCenter, createMarker, createCircle, reverseGeocode } from '@/services/amap';
+import { initMap, getUserLocation, setMapCenter, createMarker, createCircle, reverseGeocode, MapTheme } from '@/services/amap';
 import './MapContainer.scss';
 
 interface MapContainerProps {
   onLocationSelect: (lng: number, lat: number) => void;
   onMapReady?: (map: any) => void;
   selectedLocation?: { lng: number; lat: number } | null;
+  theme?: MapTheme; // 地图主题
 }
 
 const MapContainer: React.FC<MapContainerProps> = ({
   onLocationSelect,
   onMapReady,
   selectedLocation,
+  theme = 'normal',
 }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
@@ -102,7 +104,7 @@ const MapContainer: React.FC<MapContainerProps> = ({
         
         console.log('[Map] 开始初始化高德地图...');
         
-        const map = await initMap(mapRef.current!);
+        const map = await initMap(mapRef.current!, undefined, theme);
         mapInstanceRef.current = map;
         
         setIsMapReady(true);

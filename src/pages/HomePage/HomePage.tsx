@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useAppStore, Location, WeatherData, FishAnalysis } from '@/stores/appStore';
 import { getWeatherData, estimateWaterTemp } from '@/services/weather';
-import { reverseGeocode } from '@/services/amap';
+import { reverseGeocode, MapTheme } from '@/services/amap';
 import { calculateFishScore } from '@/utils/fishScoring';
 import * as api from '@/services/api';
 import { getCache, setCache, getCacheList, clearCache } from '@/services/cache';
@@ -30,6 +30,9 @@ const HomePage: React.FC = () => {
   const [showManualInput, setShowManualInput] = useState(false);
   const [manualLng, setManualLng] = useState('');
   const [manualLat, setManualLat] = useState('');
+  
+  // 地图主题
+  const [mapTheme, setMapTheme] = useState<MapTheme>('normal');
 
   // 用户状态
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -246,13 +249,25 @@ const HomePage: React.FC = () => {
         signInDays={signInDays}
         onUserClick={() => isLoggedIn ? handleLogout() : setShowLoginModal(true)}
         onSignInClick={handleSignIn}
+        offlineMode={offlineMode}
       />
 
       <main className="home-page__main">
-        <MapContainer
-          onLocationSelect={handleLocationSelect}
-          selectedLocation={selectedLocation}
-        />
+        <div className="map-wrapper">
+          <MapContainer
+            onLocationSelect={handleLocationSelect}
+            selectedLocation={selectedLocation}
+            theme={mapTheme}
+          />
+          {/* 主题切换按钮 */}
+          <button 
+            className="theme-toggle-btn"
+            onClick={() => setMapTheme(mapTheme === 'dark' ? 'normal' : 'dark')}
+            title={mapTheme === 'dark' ? '切换白色主题' : '切换黑色主题'}
+          >
+            {mapTheme === 'dark' ? '☀️' : '🌙'}
+          </button>
+        </div>
 
         {fishAnalysis && weatherData && (
           <FishScoreCard 
