@@ -89,11 +89,19 @@ const MapContainer: React.FC<MapContainerProps> = ({
 
   // 初始化地图
   useEffect(() => {
-    if (initializedRef.current) return;
-    initializedRef.current = true;
-    
     if (!mapRef.current) return;
 
+    // 如果已经初始化过，先销毁旧地图
+    if (initializedRef.current && mapInstanceRef.current) {
+      try {
+        mapInstanceRef.current.destroy();
+      } catch (e) {
+        console.warn('[Map] 销毁旧地图失败:', e);
+      }
+      mapInstanceRef.current = null;
+      initializedRef.current = false;
+    }
+    
     const initMapInstance = async () => {
       try {
         setIsLoading(true);
@@ -155,7 +163,7 @@ const MapContainer: React.FC<MapContainerProps> = ({
         mapInstanceRef.current = null;
       }
     };
-  }, [onMapReady, handleLocationChange]);
+  }, [theme, onMapReady, handleLocationChange]);
 
   // 外部位置变化
   useEffect(() => {
