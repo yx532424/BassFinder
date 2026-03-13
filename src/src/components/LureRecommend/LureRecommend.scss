@@ -1,0 +1,166 @@
+.lure-recommend {
+  margin-top: $space-5;
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: $space-2;
+    font-family: $font-display;
+    font-size: $text-sm;
+    font-weight: $font-semibold;
+    color: $text-primary;
+    margin-bottom: $space-3;
+    padding-bottom: $space-2;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+
+    .title-icon {
+      font-size: 16px;
+      filter: drop-shadow(0 0 4px rgba(0, 212, 170, 0.5));
+    }
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: $space-2;
+  }
+}
+
+.lure-item {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+  background: linear-gradient(135deg, rgba(28, 40, 51, 0.6) 0%, rgba(21, 31, 40, 0.4) 100%);
+  border-radius: $radius-md;
+  padding: $space-3;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  animation: lure-enter 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  opacity: 0;
+  transition: all $transition-base;
+  position: relative;
+  overflow: hidden;
+
+  // hover/active 效果
+  &:active {
+    transform: scale(0.98);
+    background: linear-gradient(135deg, rgba(28, 40, 51, 0.8) 0%, rgba(21, 31, 40, 0.6) 100%);
+  }
+
+  // 左侧装饰线
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: $color-primary;
+    opacity: 0;
+    transition: opacity $transition-base;
+  }
+
+  &:hover::before,
+  &:active::before {
+    opacity: 1;
+  }
+
+  &__icon {
+    @include flex-center;
+    width: 36px;
+    height: 36px;
+    background: rgba($color-primary, 0.15);
+    border-radius: $radius-sm;
+    color: $color-primary;
+    flex-shrink: 0;
+    transition: all $transition-base;
+    
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  &__info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__name {
+    font-size: $text-sm;
+    font-weight: $font-medium;
+    color: $text-primary;
+    @include text-ellipsis;
+  }
+
+  &__desc {
+    font-size: $text-xs;
+    color: $text-muted;
+    margin-top: 2px;
+    @include text-ellipsis-multiline(1);
+  }
+
+  &__type {
+    font-family: $font-mono;
+    font-size: 10px;
+    font-weight: $font-medium;
+    color: $text-secondary;
+    padding: 3px 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: $radius-sm;
+    flex-shrink: 0;
+    letter-spacing: 0.5px;
+  }
+
+  // 类型颜色
+  &.type-vib {
+    &::before { background: linear-gradient(180deg, #ff6b35, #f7931e); }
+    .lure-item__icon { 
+      background: linear-gradient(135deg, rgba(255, 107, 53, 0.2) 0%, rgba(247, 147, 30, 0.1) 100%); 
+      color: #ff6b35; 
+    }
+    .lure-item__type { color: #ff6b35; }
+  }
+  &.type-minnow {
+    &::before { background: linear-gradient(180deg, #00d4aa, #00a8cc); }
+    .lure-item__icon { 
+      background: linear-gradient(135deg, rgba(0, 212, 170, 0.2) 0%, rgba(0, 168, 204, 0.1) 100%); 
+      color: #00d4aa; 
+    }
+    .lure-item__type { color: #00d4aa; }
+  }
+  &.type-pencil {
+    &::before { background: linear-gradient(180deg, #00c853, #69f0ae); }
+    .lure-item__icon { 
+      background: linear-gradient(135deg, rgba(0, 200, 83, 0.2) 0%, rgba(105, 240, 174, 0.1) 100%); 
+      color: #00c853; 
+    }
+    .lure-item__type { color: #00c853; }
+  }
+  &.type-popper {
+    &::before { background: linear-gradient(180deg, #ffab00, #ffd600); }
+    .lure-item__icon { 
+      background: linear-gradient(135deg, rgba(255, 171, 0, 0.2) 0%, rgba(255, 214, 0, 0.1) 100%); 
+      color: #ffab00; 
+    }
+    .lure-item__type { color: #ffab00; }
+  }
+  &.type-grub {
+    &::before { background: linear-gradient(180deg, #7c4dff, #b388ff); }
+    .lure-item__icon { 
+      background: linear-gradient(135deg, rgba(124, 77, 255, 0.2) 0%, rgba(179, 136, 255, 0.1) 100%); 
+      color: #7c4dff; 
+    }
+    .lure-item__type { color: #7c4dff; }
+  }
+}
+
+@keyframes lure-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
