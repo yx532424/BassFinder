@@ -1,0 +1,57 @@
+// Skeleton Loading Styles
+// 骨架屏动画效果
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+// 骨架卡片组合
+.skeleton-card {
+  padding: 16px;
+  background: linear-gradient(180deg, rgba(26, 32, 44, 0.98) 0%, rgba(15, 23, 42, 0.98) 100%);
+  border-radius: 24px 24px 0 0;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  &__score {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  &__metrics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  &__lures {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+  }
+}

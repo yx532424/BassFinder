@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, RefreshCw, MapPin } from 'lucide-react';
+import { Search, RefreshCw, MapPin, User } from 'lucide-react';
 import './Header.scss';
 
 interface HeaderProps {
@@ -7,6 +7,10 @@ interface HeaderProps {
   onSearchClick: () => void;
   onRefreshClick: () => void;
   isLoading?: boolean;
+  isLoggedIn?: boolean;
+  signInDays?: number;
+  onUserClick?: () => void;
+  onSignInClick?: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -14,6 +18,10 @@ const Header: React.FC<HeaderProps> = ({
   onSearchClick,
   onRefreshClick,
   isLoading = false,
+  isLoggedIn = false,
+  signInDays = 0,
+  onUserClick,
+  onSignInClick,
 }) => {
   return (
     <header className="header">
@@ -28,6 +36,16 @@ const Header: React.FC<HeaderProps> = ({
       </div>
       
       <div className="header__right">
+        {isLoggedIn && signInDays > 0 && (
+          <button 
+            className="header__btn header__signin" 
+            onClick={onSignInClick}
+            title="签到"
+          >
+            <span className="signin-fire">🔥</span>
+            <span className="signin-days">{signInDays}</span>
+          </button>
+        )}
         <button 
           className="header__btn" 
           onClick={onSearchClick}
@@ -42,6 +60,13 @@ const Header: React.FC<HeaderProps> = ({
           aria-label="刷新数据"
         >
           <RefreshCw size={20} className={isLoading ? 'spin' : ''} />
+        </button>
+        <button 
+          className="header__btn header__user-btn" 
+          onClick={onUserClick}
+          aria-label="用户中心"
+        >
+          <User size={20} />
         </button>
       </div>
     </header>

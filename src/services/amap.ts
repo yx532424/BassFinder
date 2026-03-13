@@ -1,8 +1,9 @@
 /**
  * 地图服务 - 高德地图
- * 使用官方直接加载方式，确保移动端兼容性
+ * 使用动态加载方式
  */
 
+// 全局 AMap 加载器
 declare global {
   interface Window {
     AMap: any;
@@ -16,34 +17,39 @@ let mapInstance: any = null;
 let loadPromise: Promise<any> | null = null;
 
 /**
- * 动态加载高德地图 SDK
+ * 加载高德地图 SDK - 使用动态 script 加载
  */
 function loadAMapScript(): Promise<any> {
   return new Promise((resolve, reject) => {
     // 如果已加载，直接返回
     if (window.AMap) {
       console.log('[AMap] 已存在，直接使用');
-      amapInstance = window.AMap;
       resolve(window.AMap);
       return;
     }
 
-    // 设置安全配置（v2.0需要）
+    // 设置安全配置
     window._AMapSecurityConfig = {
       securityJsCode: '',
     };
 
-    // 动态创建 script 标签
+    // 创建 script 标签
     const script = document.createElement('script');
-    // 使用 1.4.15 稳定版本
-    script.src = 'https://webapi.amap.com/maps?v=1.4.15&key=840bef19b8611f8b7054ddbba4bc6d32&plugin=AMap.Scale,AMap.ToolBar,AMap.Geolocation,AMap.Geocoder';
+    script.src = 'https://webapi.amap.com/maps?v=2.0&key=840bef19b8611f8b7054ddbba4bc6d32&plugin=AMap.Scale,AMap.ToolBar,AMap.Geolocation,AMap.Geocoder';
     script.async = true;
-    script.charset = 'utf-8';
     
     script.onload = () => {
-      console.log('[AMap] 脚本加载成功, 版本:', window.AMap?.version);
-      amapInstance = window.AMap;
-      resolve(window.AMap);
+      console.log('[AMap] 脚本加载成功');
+      // 等待 AMap 初始化
+      const checkAMap = () => {
+        if (window.AMap) {
+          amapInstance = window.AMap;
+          resolve(window.AMap);
+        } else {
+          setTimeout(checkAMap, 100);
+        }
+      };
+      checkAMap();
     };
     
     script.onerror = (error) => {
@@ -60,7 +66,7 @@ function loadAMapScript(): Promise<any> {
  */
 export async function loadAMap(): Promise<any> {
   if (amapInstance) return amapInstance;
-
+  
   if (loadPromise) return loadPromise;
   
   loadPromise = loadAMapScript();
@@ -79,11 +85,7 @@ export async function initMap(container: HTMLElement, center?: [number, number])
   // 清理旧地图
   if (mapInstance) {
     console.log('[AMap] 清理旧地图');
-    try {
-      mapInstance.destroy();
-    } catch (e) {
-      console.warn('[AMap] 销毁旧地图失败:', e);
-    }
+    mapInstance.destroy();
     mapInstance = null;
   }
 
@@ -103,10 +105,33 @@ export async function initMap(container: HTMLElement, center?: [number, number])
       viewMode: '2D',
       mapStyle: 'amap://styles/dark',
       showIndoorMap: false,
-      resizeEnable: true,  // 窗口大小变化时自动调整
     });
 
     console.log('[AMap] 地图创建成功');
+
+    // 等待主题加载完成（最多等待 3 秒）
+    let themeLoaded = false;
+    const themePromise = new Promise<void>((resolve) => {
+      mapInstance.on('mapStyleLoad', () => {
+        console.log('[AMap] 主题加载完成');
+        themeLoaded = true;
+        resolve();
+      });
+    });
+    
+    // 同时设置超时
+    const timeoutPromise = new Promise<void>((resolve) => {
+      setTimeout(() => {
+        if (!themeLoaded) {
+          console.warn('[AMap] 主题加载超时，尝试重新设置主题');
+          // 尝试重新设置主题
+          mapInstance.setMapStyle('amap://styles/dark');
+        }
+        resolve();
+      }, 3000);
+    });
+    
+    await Promise.race([themePromise, timeoutPromise]);
 
     // 添加控件
     mapInstance.addControl(new AMap.Scale());
@@ -156,9 +181,6 @@ export function getUserLocation(): Promise<{ lng: number; lat: number }> {
         enableHighAccuracy: true,
         timeout: 10000,
         maximumAge: 300000,
-        showButton: false,  // 隐藏默认定位按钮
-        showMarker: false,
-        showCircle: true,
       });
 
       geolocation.getCurrentPosition((status: string, result: any) => {
@@ -184,26 +206,18 @@ export async function reverseGeocode(lat: number, lng: number): Promise<string> 
   try {
     const AMap = await loadAMap();
     
-    // 确保 Geocoder 已加载
-    await loadPlugin('AMap.Geocoder');
-    
     return new Promise((resolve) => {
       const geocoder = new AMap.Geocoder({
         radius: 1000,
         extensions: 'base',
-        city: '全国',
       });
 
-      // 参数顺序是 [lng, lat] 而不是 [lat, lng]
       geocoder.getAddress([lng, lat], (status: string, result: any) => {
-        console.log('[AMap] 逆地理编码结果:', status, result);
         if (status === 'complete' && result.regeocode) {
           const address = result.regeocode.addressComponent;
           const city = address.city || address.province || '未知';
-          console.log('[AMap] 获取到城市:', city);
           resolve(city);
         } else {
-          console.warn('[AMap] 逆地理编码失败:', result?.info);
           resolve('未知地点');
         }
       });
@@ -212,18 +226,6 @@ export async function reverseGeocode(lat: number, lng: number): Promise<string> 
     console.error('[AMap] 逆地理编码失败:', error);
     return '未知地点';
   }
-}
-
-/**
- * 加载插件
- */
-async function loadPlugin(pluginName: string): Promise<void> {
-  const AMap = await loadAMap();
-  return new Promise((resolve, reject) => {
-    AMap.plugin(pluginName, () => {
-      resolve();
-    });
-  });
 }
 
 /**

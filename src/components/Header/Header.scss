@@ -160,3 +160,26 @@
     transform: translateX(30%) rotate(45deg);
   }
 }
+
+.header__signin {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+  border-radius: 20px;
+  
+  .signin-fire {
+    font-size: 14px;
+  }
+  
+  .signin-days {
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+  }
+}
+
+.header__user-btn {
+  background: rgba(255, 255, 255, 0.1);
+}

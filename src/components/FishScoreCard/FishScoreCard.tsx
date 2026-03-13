@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { FishAnalysis, WeatherData } from '@/stores/appStore';
 import ScoreRing from '../ScoreRing';
 import MetricItem from '../MetricItem';
@@ -12,12 +12,8 @@ interface FishScoreCardProps {
   onRefresh?: () => void;
 }
 
-// 高度配置
-const MIN_HEIGHT = 18;    // 最小高度百分比
-const MAX_HEIGHT = 85;     // 最大高度百分比
-const COLLAPSED_HEIGHT = 30;  // 收起时的高度
-const EXPANDED_HEIGHT = 65;   // 展开时的高度
-const SNAP_THRESHOLD = 50;    // 吸附阈值（百分比）
+// 手势状态枚举
+type GestureState = 'idle' | 'dragging' | 'snapping';
 
 const FishScoreCard: React.FC<FishScoreCardProps> = ({ 
   analysis, 
@@ -25,18 +21,19 @@ const FishScoreCard: React.FC<FishScoreCardProps> = ({
   onRefresh 
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [cardHeight, setCardHeight] = useState<number>(COLLAPSED_HEIGHT);
-  const [isDragging, setIsDragging] = useState(false);
+  const [cardHeight, setCardHeight] = useState<number>(30);
+  const [gestureState, setGestureState] = useState<GestureState>('idle');
   const [showHint, setShowHint] = useState(true);
   
   const startYRef = useRef<number>(0);
-  const startHeightRef = useRef<number>(COLLAPSED_HEIGHT);
-  const cardRef = useRef<HTMLDivElement>(null);
+  const startHeightRef = useRef<number>(20);
   const hintTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // 隐藏提示
+  // 隐藏提示的定时器
   useEffect(() => {
-    hintTimeoutRef.current = setTimeout(() => setShowHint(false), 5000);
+    hintTimeoutRef.current = setTimeout(() => {
+      setShowHint(false);
+    }, 3000);
     return () => {
       if (hintTimeoutRef.current) clearTimeout(hintTimeoutRef.current);
     };
@@ -44,147 +41,80 @@ const FishScoreCard: React.FC<FishScoreCardProps> = ({
 
   if (!analysis) return null;
 
-  // 计算新高度
-  const calculateHeight = useCallback((currentY: number): number => {
-    const deltaY = startYRef.current - currentY;
+  // 拖拽开始
+  const handleTouchStart = (e: React.TouchEvent | React.MouseEvent) => {
+    const clientY = 'touches' in e ? e.touches[0].clientY : (e as React.MouseEvent).clientY;
+    startYRef.current = clientY;
+    startHeightRef.current = cardHeight;
+    setGestureState('dragging');
+    setShowHint(false);
+  };
+
+  // 拖拽移动 - 实时调整高度
+  const handleTouchMove = (e: React.TouchEvent | React.MouseEvent) => {
+    if (gestureState !== 'dragging') return;
+    
+    const clientY = 'touches' in e ? e.touches[0].clientY : (e as React.MouseEvent).clientY;
+    const deltaY = startYRef.current - clientY;
     const screenHeight = window.innerHeight;
     const deltaPercent = (deltaY / screenHeight) * 100;
-    return Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, startHeightRef.current + deltaPercent));
-  }, []);
-
-  // 处理指针按下
-  const handlePointerDown = useCallback((e: React.PointerEvent) => {
-    // 只允许在拖拽区域触发
-    const target = e.target as HTMLElement;
-    if (!target.closest('.fish-score-card__handle-area')) return;
     
-    e.preventDefault();
-    e.stopPropagation();
-    
-    // 设置捕获
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
-    
-    startYRef.current = e.clientY;
-    startHeightRef.current = cardHeight;
-    setIsDragging(true);
-    setShowHint(false);
-  }, [cardHeight]);
-
-  // 处理指针移动
-  const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    if (!isDragging) return;
-    
-    e.preventDefault();
-    
-    const newHeight = calculateHeight(e.clientY);
+    // 向上滑动展开，向下滑动收起
+    const newHeight = Math.min(85, Math.max(18, startHeightRef.current + deltaPercent));
     setCardHeight(newHeight);
-    setIsCollapsed(newHeight <= COLLAPSED_HEIGHT);
-  }, [isDragging, calculateHeight]);
+    setIsCollapsed(newHeight <= 28);
+  };
 
-  // 处理指针释放
-  const handlePointerUp = useCallback((e: React.PointerEvent) => {
-    if (!isDragging) return;
-    
-    e.preventDefault();
-    
-    // 释放捕获
-    try {
-      (e.target as HTMLElement).releasePointerCapture(e.pointerId);
-    } catch (err) {}
-    
-    setIsDragging(false);
-    
-    // 自动吸附
-    const currentHeight = cardHeight;
-    let targetHeight: number;
-    let shouldCollapse: boolean;
-    
-    if (currentHeight >= SNAP_THRESHOLD) {
-      targetHeight = EXPANDED_HEIGHT;
-      shouldCollapse = false;
-    } else {
-      targetHeight = COLLAPSED_HEIGHT;
-      shouldCollapse = true;
-    }
-    
-    // 使用 CSS transition 进行平滑动画
-    setCardHeight(targetHeight);
-    setIsCollapsed(shouldCollapse);
-  }, [isDragging, cardHeight]);
-
-  // 触摸事件处理（备用）
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    const target = e.target as HTMLElement;
-    if (!target.closest('.fish-score-card__handle-area')) return;
-    
-    e.preventDefault();
-    e.stopPropagation();
-    
-    startYRef.current = e.touches[0].clientY;
-    startHeightRef.current = cardHeight;
-    setIsDragging(true);
-    setShowHint(false);
-  }, [cardHeight]);
-
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    if (!isDragging) return;
-    
-    e.preventDefault();
-    
-    const newHeight = calculateHeight(e.touches[0].clientY);
-    setCardHeight(newHeight);
-    setIsCollapsed(newHeight <= COLLAPSED_HEIGHT);
-  }, [isDragging, calculateHeight]);
-
-  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
-    if (!isDragging) return;
-    
-    e.preventDefault();
-    setIsDragging(false);
+  // 拖拽结束 - 根据滑动方向自动吸附
+  const handleTouchEnd = () => {
+    setGestureState('snapping');
     
     const currentHeight = cardHeight;
     let targetHeight: number;
     let shouldCollapse: boolean;
     
-    if (currentHeight >= SNAP_THRESHOLD) {
-      targetHeight = EXPANDED_HEIGHT;
+    if (currentHeight >= 35 || currentHeight <= 30) {
+      targetHeight = 65;
       shouldCollapse = false;
     } else {
-      targetHeight = COLLAPSED_HEIGHT;
+      targetHeight = 20;
       shouldCollapse = true;
     }
     
     setCardHeight(targetHeight);
     setIsCollapsed(shouldCollapse);
-  }, [isDragging, cardHeight]);
+    
+    setTimeout(() => {
+      setGestureState('idle');
+    }, 400);
+  };
+
+  // 阻止事件穿透
+  const handlePreventScroll = (e: React.TouchEvent) => {
+    e.stopPropagation();
+  };
 
   return (
     <div 
-      ref={cardRef}
-      className={`fish-score-card ${isCollapsed ? 'collapsed' : ''} ${isDragging ? 'dragging' : ''}`}
-      style={{ 
-        height: `${cardHeight}vh`,
-      }}
+      className={`fish-score-card ${isCollapsed ? 'collapsed' : ''} ${gestureState}`}
+      style={{ height: `${cardHeight}vh` }}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onTouchMoveCapture={handlePreventScroll}
     >
-      {/* 拖拽区域 */}
-      <div 
-        className="fish-score-card__handle-area"
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
-        onPointerLeave={handlePointerUp}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
-        {/* 提示 */}
+      {/* 顶部渐变遮罩 */}
+      <div className="fish-score-card__gradient-mask" />
+      
+      {/* 拖拽手柄区域 */}
+      <div className="fish-score-card__handle-area">
+        {/* 提示文案 - 根据状态显示不同提示 */}
         <div className={`fish-score-card__hint ${showHint ? 'visible' : ''}`}>
           <span className="hint-icon">{isCollapsed ? '👆' : '👇'}</span>
           <span className="hint-text">{isCollapsed ? '上滑展开' : '下滑收起'}</span>
         </div>
         
-        {/* 手柄 */}
+        {/* 拖拽手柄 */}
         <div className="fish-score-card__handle">
           <div className="handle-bar">
             <div className="handle-grip">
@@ -196,13 +126,16 @@ const FishScoreCard: React.FC<FishScoreCardProps> = ({
         </div>
       </div>
       
-      {/* 内容 */}
+      {/* 内容区域 */}
       <div className="fish-score-card__content">
+        {/* 背景纹理 */}
         <div className="fish-score-card__texture" />
+        
+        {/* 顶部装饰线 */}
         <div className="fish-score-card__accent-line" />
         
         <div className="fish-score-card__inner">
-          {/* 标题 */}
+          {/* 标题区 */}
           <div className="fish-score-card__header">
             <div className="header-icon">🎣</div>
             <h2 className="card-title">路亚鱼情分析</h2>
@@ -212,7 +145,7 @@ const FishScoreCard: React.FC<FishScoreCardProps> = ({
             </div>
           </div>
 
-          {/* 得分 */}
+          {/* 得分圆环 */}
           <ScoreRing 
             score={analysis.totalScore}
             level={analysis.level}
@@ -220,20 +153,23 @@ const FishScoreCard: React.FC<FishScoreCardProps> = ({
             desc={analysis.desc}
           />
 
-          {/* 指标 */}
+          {/* 指标网格 */}
           <div className="fish-score-card__metrics">
             {analysis.factors.map((factor, index) => (
-              <MetricItem key={index} factor={factor} />
+              <MetricItem 
+                key={index} 
+                factor={factor}
+              />
             ))}
           </div>
 
-          {/* 拟饵 */}
+          {/* 拟饵推荐 */}
           <LureRecommend lures={analysis.lures} />
 
-          {/* 标点 */}
+          {/* 标点推荐 */}
           <SpotRecommend spots={analysis.spots} />
 
-          {/* 底部 */}
+          {/* 底部信息 */}
           <div className="fish-score-card__footer">
             <div className="footer-location">
               <span className="location-icon">📍</span>

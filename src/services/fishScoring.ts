@@ -10,7 +10,7 @@ import { formatWindDir, getTimePeriod } from './format';
 /**
  * 鱼情评分主函数
  */
-export function calculateFishScore(weather: WeatherData): FishAnalysis {
+export function calculateFishScore(weather: WeatherData, locationName?: string): FishAnalysis {
   // 计算各项因子得分
   const tempScore = calculateTempScore(weather.temperature);
   const pressureScore = calculatePressureScore(weather.pressure);
@@ -101,6 +101,7 @@ export function calculateFishScore(weather: WeatherData): FishAnalysis {
     factors,
     lures,
     spots,
+    locationName: locationName || '未知钓点',
   };
 }
 

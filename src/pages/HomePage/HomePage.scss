@@ -159,3 +159,109 @@
     }
   }
 }
+
+// 登录/注册弹窗
+.auth-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
+}
+
+.auth-modal__content {
+  background: linear-gradient(135deg, #0a1628 0%, #142238 100%);
+  border-radius: 20px;
+  padding: 30px;
+  width: 90%;
+  max-width: 360px;
+  border: 1px solid rgba(0, 212, 170, 0.2);
+
+  h3 {
+    color: #fff;
+    font-size: 24px;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+}
+
+.auth-error {
+  color: #ff6b6b;
+  font-size: 14px;
+  text-align: center;
+  margin-bottom: 15px;
+  padding: 10px;
+  background: rgba(255, 107, 107, 0.1);
+  border-radius: 8px;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+
+  input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 14px 16px;
+    color: #fff;
+    font-size: 16px;
+    outline: none;
+    transition: all 0.2s;
+
+    &:focus {
+      border-color: #00d4aa;
+      background: rgba(0, 212, 170, 0.05);
+    }
+
+    &::placeholder {
+      color: #8b9caa;
+    }
+  }
+
+  button {
+    background: linear-gradient(135deg, #00d4aa 0%, #00a8ff 100%);
+    border: none;
+    border-radius: 10px;
+    padding: 14px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0, 212, 170, 0.4);
+    }
+
+    &:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.auth-switch {
+  color: #8b9caa;
+  font-size: 14px;
+  text-align: center;
+  margin-top: 10px;
+
+  span {
+    color: #00d4aa;
+    cursor: pointer;
+    margin-left: 5px;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}

@@ -1,10 +1,10 @@
 /**
  * 鱼情评分算法
  * 基于多项指标计算路亚鱼情综合得分
- * 淡水路亚，无需月相和潮汐
  */
 
 import { WeatherData, FishAnalysis, FactorItem, Lure, Spot } from '@/stores/appStore';
+import { getMoonPhase, getTideType } from './moonPhase';
 import { formatWindDir, getTimePeriod } from './format';
 
 /**
@@ -17,16 +17,18 @@ export function calculateFishScore(weather: WeatherData): FishAnalysis {
   const windScore = calculateWindScore(weather.windSpeed);
   const windDirScore = calculateWindDirScore(weather.windDir);
   const humidityScore = calculateHumidityScore(weather.humidity);
+  const moonScore = calculateMoonScore();
   const timeScore = calculateTimeScore();
 
-  // 计算综合得分 (加权平均) - 移除月相权重
+  // 计算综合得分 (加权平均)
   const weights = {
-    temp: 0.25,
-    pressure: 0.20,
-    wind: 0.20,
-    windDir: 0.15,
+    temp: 0.20,
+    pressure: 0.15,
+    wind: 0.15,
+    windDir: 0.10,
     humidity: 0.10,
-    time: 0.10,
+    moon: 0.15,
+    time: 0.15,
   };
 
   const totalScore = Math.round(
@@ -35,14 +37,17 @@ export function calculateFishScore(weather: WeatherData): FishAnalysis {
     windScore * weights.wind +
     windDirScore * weights.windDir +
     humidityScore * weights.humidity +
+    moonScore * weights.moon +
     timeScore * weights.time
   );
 
   // 获取各项数据
+  const moonPhase = getMoonPhase();
+  const tide = getTideType();
   const timePeriod = getTimePeriod();
   const windDirName = formatWindDir(weather.windDir);
 
-  // 构建因子列表 - 移除月相
+  // 构建因子列表
   const factors: FactorItem[] = [
     {
       name: '水温',
@@ -59,6 +64,14 @@ export function calculateFishScore(weather: WeatherData): FishAnalysis {
       desc: pressureScore >= 70 ? '活跃' : pressureScore >= 40 ? '一般' : '低活性',
       status: pressureScore >= 70 ? 'good' : pressureScore >= 40 ? 'warning' : 'bad',
       score: pressureScore,
+    },
+    {
+      name: '月相',
+      nameEmoji: '🌙',
+      value: moonPhase.phase,
+      desc: tide.desc,
+      status: moonScore >= 70 ? 'good' : moonScore >= 40 ? 'warning' : 'bad',
+      score: moonScore,
     },
     {
       name: '风向',
@@ -199,6 +212,21 @@ function calculateHumidityScore(humidity: number): number {
     return 50 - (humidity - 90) * 4;
   } else {
     return 30;
+  }
+}
+
+/**
+ * 计算月相得分
+ */
+function calculateMoonScore(): number {
+  const { phase } = getMoonPhase();
+  
+  if (phase === '满月' || phase === '新月') {
+    return 100; // 大潮日
+  } else if (phase === '上弦月' || phase === '下弦月') {
+    return 75; // 中潮日
+  } else {
+    return 50; // 小潮日
   }
 }
 
