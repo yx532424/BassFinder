@@ -1,5 +1,8 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { FishAnalysis, WeatherData } from '@/stores/appStore';
+import { getWeatherWarnings, getFishingIndex } from '@/services/weatherWarning';
+import { generatePosterData, generatePosterHTML } from '@/services/poster';
+import { getMoonPhase, getTideData, getFishingAdvice } from '@/services/tideMoon';
 import ScoreRing from '../ScoreRing';
 import MetricItem from '../MetricItem';
 import LureRecommend from '../LureRecommend';
@@ -153,6 +156,43 @@ const FishScoreCard: React.FC<FishScoreCardProps> = ({
             desc={analysis.desc}
           />
 
+          {/* 天气预警 */}
+          <div className="weather-warnings">
+            {(() => {
+              const warnings = getWeatherWarnings(weather);
+              const fishingIndex = getFishingIndex(weather);
+              const moon = getMoonPhase();
+              const tide = getTideData();
+              const advice = getFishingAdvice(moon, tide);
+              return (
+                <>
+                  <div className={`fishing-index fishing-index--${fishingIndex.level}`}>
+                    <span className="index-icon">🎯</span>
+                    <span className="index-text">钓鱼指数: {fishingIndex.score}分 ({fishingIndex.level})</span>
+                  </div>
+                  {warnings.filter(w => w.type !== 'good').slice(0, 2).map((warning, idx) => (
+                    <div key={idx} className={`warning-item warning-item--${warning.level}`}>
+                      <span className="warning-icon">{warning.icon}</span>
+                      <span className="warning-title">{warning.title}</span>
+                      <span className="warning-desc">{warning.desc}</span>
+                    </div>
+                  ))}
+                  <div className="moon-tide-info">
+                    <div className="moon-phase">
+                      <span className="moon-emoji">{moon.emoji}</span>
+                      <span className="moon-text">{moon.name} ({moon.illumination}%)</span>
+                    </div>
+                    <div className="tide-info">
+                      <span className="tide-icon">🌊</span>
+                      <span className="tide-text">{tide.current} · 潮位{tide.level}%</span>
+                    </div>
+                    <div className="fishing-advice">{advice}</div>
+                  </div>
+                </>
+              );
+            })()}
+          </div>
+
           {/* 指标网格 */}
           <div className="fish-score-card__metrics">
             {analysis.factors.map((factor, index) => (
@@ -174,6 +214,21 @@ const FishScoreCard: React.FC<FishScoreCardProps> = ({
             <div className="footer-location">
               <span className="location-icon">📍</span>
               <span className="location-text">{analysis.locationName || '未知钓点'}</span>
+            </div>
+            <div className="footer-actions">
+              <button 
+                className="footer-action-btn poster-btn" 
+                onClick={() => {
+                  const posterData = generatePosterData(analysis, weather);
+                  const html = generatePosterHTML(posterData);
+                  const blob = new Blob([html], { type: 'text/html' });
+                  const url = URL.createObjectURL(blob);
+                  window.open(url, '_blank');
+                }}
+                title="生成海报"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              </button>
             </div>
             <div className="footer-time">
               <span className="time-icon">🕐</span>

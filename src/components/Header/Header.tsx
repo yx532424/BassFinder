@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, RefreshCw, MapPin, User } from 'lucide-react';
+import { Search, RefreshCw, MapPin, User, Download } from 'lucide-react';
 import './Header.scss';
 
 interface HeaderProps {
@@ -12,6 +12,9 @@ interface HeaderProps {
   onUserClick?: () => void;
   onSignInClick?: () => void;
   offlineMode?: boolean;
+  onRankingClick?: () => void;
+  onCatchClick?: () => void;
+  onExportClick?: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -24,6 +27,9 @@ const Header: React.FC<HeaderProps> = ({
   onUserClick,
   onSignInClick,
   offlineMode = false,
+  onRankingClick,
+  onCatchClick,
+  onExportClick,
 }) => {
   return (
     <header className="header">
@@ -44,37 +50,56 @@ const Header: React.FC<HeaderProps> = ({
       </div>
       
       <div className="header__right">
-        {isLoggedIn && signInDays > 0 && (
+        {isLoggedIn && (
           <button 
             className="header__btn header__signin" 
             onClick={onSignInClick}
             title="签到"
           >
-            <span className="signin-fire">🔥</span>
-            <span className="signin-days">{signInDays}</span>
+            <span className="signin-badge">📅</span>
+            {signInDays > 0 && <span className="signin-days">{signInDays}天</span>}
           </button>
         )}
+        
         <button 
-          className="header__btn" 
-          onClick={onSearchClick}
-          aria-label="搜索地点"
+          className="header__btn header__ranking" 
+          onClick={onRankingClick}
+          title="排行榜"
         >
-          <Search size={20} />
+          🏆
         </button>
+
         <button 
-          className="header__btn" 
+          className="header__btn header__catch" 
+          onClick={onCatchClick}
+          title="钓获记录"
+        >
+          🎣
+        </button>
+
+        <button 
+          className="header__btn header__export" 
+          onClick={onExportClick}
+          title="导出数据"
+        >
+          📤
+        </button>
+        
+        <button 
+          className="header__btn header__refresh" 
           onClick={onRefreshClick}
           disabled={isLoading}
-          aria-label="刷新数据"
+          title="刷新"
         >
-          <RefreshCw size={20} className={isLoading ? 'spin' : ''} />
+          <RefreshCw size={18} className={isLoading ? 'spinning' : ''} />
         </button>
+        
         <button 
-          className="header__btn header__user-btn" 
+          className="header__btn header__user" 
           onClick={onUserClick}
-          aria-label="用户中心"
+          title="用户"
         >
-          <User size={20} />
+          <User size={18} />
         </button>
       </div>
     </header>

@@ -341,6 +341,47 @@
         color: $text-muted;
       }
     }
+
+    .footer-actions {
+      display: flex;
+      gap: 8px;
+      
+      .footer-action-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.7);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        
+        &:hover {
+          background: rgba(0, 212, 170, 0.15);
+          border-color: rgba(0, 212, 170, 0.3);
+          color: #00d4aa;
+        }
+        
+        &:active {
+          transform: scale(0.95);
+        }
+
+        &.poster-btn:hover {
+          background: rgba(66, 153, 225, 0.15);
+          border-color: rgba(66, 153, 225, 0.3);
+          color: #4299e1;
+        }
+
+        &.favorite-btn:hover {
+          background: rgba(255, 107, 53, 0.15);
+          border-color: rgba(255, 107, 53, 0.3);
+          color: #ff6b35;
+        }
+      }
+    }
   }
 }
 
@@ -422,5 +463,131 @@
   100% {
     opacity: 0;
     transform: translateX(-50%) translateY(-10px);
+  }
+}
+
+// 天气预警区域
+.weather-warnings {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  
+  .fishing-index {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: rgba(0, 212, 170, 0.1);
+    border: 1px solid rgba(0, 212, 170, 0.2);
+    
+    .index-icon {
+      font-size: 14px;
+    }
+    
+    .index-text {
+      font-size: 12px;
+      color: #00d4aa;
+      font-weight: 500;
+    }
+    
+    &--极佳 {
+      background: rgba(0, 212, 170, 0.15);
+      border-color: rgba(0, 212, 170, 0.4);
+      .index-text { color: #00d4aa; }
+    }
+    
+    &--良好 {
+      background: rgba(72, 187, 120, 0.15);
+      border-color: rgba(72, 187, 120, 0.4);
+      .index-text { color: #48b878; }
+    }
+    
+    &--一般 {
+      background: rgba(237, 137, 54, 0.15);
+      border-color: rgba(237, 137, 54, 0.4);
+      .index-text { color: #ed8936; }
+    }
+    
+    &--较差 {
+      background: rgba(245, 101, 101, 0.15);
+      border-color: rgba(245, 101, 101, 0.4);
+      .index-text { color: #f56565; }
+    }
+  }
+  
+  .warning-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    
+    .warning-icon {
+      font-size: 14px;
+    }
+    
+    .warning-title {
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .warning-desc {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 11px;
+    }
+    
+    &--info {
+      background: rgba(66, 153, 225, 0.1);
+      border: 1px solid rgba(66, 153, 225, 0.2);
+      .warning-title { color: #4299e1; }
+    }
+    
+    &--warning {
+      background: rgba(237, 137, 54, 0.1);
+      border: 1px solid rgba(237, 137, 54, 0.2);
+      .warning-title { color: #ed8936; }
+    }
+    
+    &--danger {
+      background: rgba(245, 101, 101, 0.1);
+      border: 1px solid rgba(245, 101, 101, 0.2);
+      .warning-title { color: #f56565; }
+    }
+  }
+
+  .moon-tide-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 12px;
+    background: rgba(66, 153, 225, 0.08);
+    border: 1px solid rgba(66, 153, 225, 0.15);
+    border-radius: 8px;
+    
+    .moon-phase, .tide-info {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      
+      .moon-emoji, .tide-icon {
+        font-size: 14px;
+      }
+      
+      .moon-text, .tide-text {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.7);
+      }
+    }
+
+    .fishing-advice {
+      width: 100%;
+      font-size: 11px;
+      color: #4299e1;
+      margin-top: 4px;
+      line-height: 1.4;
+    }
   }
 }

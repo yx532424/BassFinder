@@ -5,7 +5,13 @@ import { reverseGeocode, MapTheme } from '@/services/amap';
 import { calculateFishScore } from '@/utils/fishScoring';
 import * as api from '@/services/api';
 import { getCache, setCache, getCacheList, clearCache } from '@/services/cache';
+import { successFeedback, errorFeedback, mediumImpact } from '@/services/haptics';
+import { addHistory, getHistory, getStats } from '@/services/history';
+import { downloadData, shareToSocial } from '@/services/export';
 import Header from '@/components/Header';
+import RankingModal from '@/components/RankingModal';
+import SpotsModal from '@/components/SpotsModal';
+import CatchModal from '@/components/CatchModal';
 import MapContainer from '@/components/MapContainer';
 import FishScoreCard from '@/components/FishScoreCard';
 import LoadingOverlay from '@/components/LoadingOverlay';
@@ -48,6 +54,15 @@ const HomePage: React.FC = () => {
   const [offlineMode, setOfflineMode] = useState(false);
   const [cacheList, setCacheList] = useState<any[]>([]);
   const [showCacheModal, setShowCacheModal] = useState(false);
+  const [showRankingModal, setShowRankingModal] = useState(false);
+  const [showSpotsModal, setShowSpotsModal] = useState(false);
+  const [showCatchModal, setShowCatchModal] = useState(false);
+  const [historyStats, setHistoryStats] = useState<any>(null);
+
+  // 加载历史统计数据
+  useEffect(() => {
+    setHistoryStats(getStats());
+  }, [fishAnalysis]);
 
   // 检查登录状态
   useEffect(() => {
@@ -108,8 +123,10 @@ const HomePage: React.FC = () => {
     try {
       const result = await api.doSignIn();
       setSignInDays(result.streak);
+      successFeedback();
       alert(`签到成功！连续${result.streak}天，获得${result.score_earned}积分`);
     } catch (e: any) {
+      errorFeedback();
       alert(e.message || '签到失败');
     }
   };
@@ -178,6 +195,22 @@ const HomePage: React.FC = () => {
       // 保存到缓存
       setCache(lng, lat, { analysis: analysis, weather: weatherWithWaterTemp, name, timestamp: Date.now() });
       setOfflineMode(false);
+
+      // 保存到历史记录
+      addHistory({
+        lng,
+        lat,
+        name,
+        score: analysis.totalScore,
+        level: analysis.level,
+        weather: {
+          temperature: weatherWithWaterTemp.temperature,
+          waterTemp: weatherWithWaterTemp.waterTemp || 0,
+          windSpeed: weatherWithWaterTemp.windSpeed,
+          pressure: weatherWithWaterTemp.pressure,
+          weather: weatherWithWaterTemp.weather,
+        }
+      });
 
     } catch (error) {
       console.error('获取数据失败:', error);
@@ -250,6 +283,13 @@ const HomePage: React.FC = () => {
         onUserClick={() => isLoggedIn ? handleLogout() : setShowLoginModal(true)}
         onSignInClick={handleSignIn}
         offlineMode={offlineMode}
+        onRankingClick={() => setShowRankingModal(true)}
+        onCatchClick={() => setShowCatchModal(true)}
+        onExportClick={() => {
+          if (confirm('导出数据为JSON文件？')) {
+            downloadData('json');
+          }
+        }}
       />
 
       <main className="home-page__main">
@@ -258,6 +298,7 @@ const HomePage: React.FC = () => {
             onLocationSelect={handleLocationSelect}
             selectedLocation={selectedLocation}
             theme={mapTheme}
+            onSpotsClick={() => setShowSpotsModal(true)}
           />
           {/* 主题切换按钮 */}
           <button 
@@ -281,6 +322,24 @@ const HomePage: React.FC = () => {
       <LoadingOverlay 
         isLoading={isLoading}
         message="正在分析路亚鱼情..."
+      />
+
+      <RankingModal 
+        visible={showRankingModal}
+        onClose={() => setShowRankingModal(false)}
+      />
+
+      <SpotsModal 
+        visible={showSpotsModal}
+        onClose={() => setShowSpotsModal(false)}
+        onSelectSpot={(spot) => {
+          handleLocationSelect(spot.lng, spot.lat);
+        }}
+      />
+
+      <CatchModal 
+        visible={showCatchModal}
+        onClose={() => setShowCatchModal(false)}
       />
 
       {/* 手动输入坐标弹窗 */}

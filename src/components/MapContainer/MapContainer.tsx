@@ -6,7 +6,8 @@ interface MapContainerProps {
   onLocationSelect: (lng: number, lat: number) => void;
   onMapReady?: (map: any) => void;
   selectedLocation?: { lng: number; lat: number } | null;
-  theme?: MapTheme; // 地图主题
+  theme?: MapTheme;
+  onSpotsClick?: () => void;
 }
 
 const MapContainer: React.FC<MapContainerProps> = ({
@@ -223,6 +224,15 @@ const MapContainer: React.FC<MapContainerProps> = ({
             <path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>
           </svg>
         )}
+      </button>
+
+      {/* 钓点按钮 */}
+      <button 
+        className="spots-btn"
+        onClick={onSpotsClick}
+        title="我的钓点"
+      >
+        📍
       </button>
     </div>
   );
