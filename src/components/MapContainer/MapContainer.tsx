@@ -238,7 +238,7 @@ const MapContainer: React.FC<MapContainerProps> = ({
       {/* 钓获按钮 */}
       <button 
         className="catch-btn"
-        onClick={onCatchClick}
+        onClick={() => onCatchClick?.()}
         title="钓获记录"
       >
         🎣
