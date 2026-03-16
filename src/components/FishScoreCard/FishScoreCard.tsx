@@ -3,6 +3,8 @@ import { FishAnalysis, WeatherData } from '@/stores/appStore';
 import { getWeatherWarnings, getFishingIndex } from '@/services/weatherWarning';
 import { generatePosterData, generatePosterHTML } from '@/services/poster';
 import { getMoonPhase, getTideData, getFishingAdvice } from '@/services/tideMoon';
+import { isBestTimeNow, getBestTimesToday } from '@/services/bestTime';
+import { get3DayForecast, getBestDayThisWeek } from '@/services/forecast';
 import ScoreRing from '../ScoreRing';
 import MetricItem from '../MetricItem';
 import LureRecommend from '../LureRecommend';
@@ -188,6 +190,63 @@ const FishScoreCard: React.FC<FishScoreCardProps> = ({
                     </div>
                     <div className="fishing-advice">{advice}</div>
                   </div>
+                  {/* 最佳钓鱼时间 */}
+                  {(() => {
+                    const bestNow = isBestTimeNow();
+                    const bestTimes = getBestTimesToday();
+                    return (
+                      <div className={`best-time-indicator ${bestNow.isBest ? 'is-best' : ''}`}>
+                        <div className="best-time-header">
+                          <span className="best-time-icon">⏰</span>
+                          <span className="best-time-title">
+                            {bestNow.isBest ? '🔥 现在是黄金时段！' : '今日最佳时段'}
+                          </span>
+                        </div>
+                        <div className="best-time-list">
+                          {bestTimes.slice(0, 2).map((t, i) => (
+                            <div key={i} className="best-time-item">
+                              <span className="best-time-slot">{t.time}</span>
+                              <span className="best-time-score">{t.score}分</span>
+                            </div>
+                          ))}
+                        </div>
+                        {!bestNow.isBest && bestNow.nextBest && (
+                          <div className="next-best-hint">
+                            下次最佳: {bestNow.nextBest}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+                  
+                  {/* 3天预报 */}
+                  {(() => {
+                    const forecasts = get3DayForecast();
+                    return (
+                      <div className="forecast-section">
+                        <div className="forecast-header">
+                          <span className="forecast-icon">📅</span>
+                          <span className="forecast-title">未来3天预报</span>
+                        </div>
+                        <div className="forecast-list">
+                          {forecasts.map((day, idx) => (
+                            <div key={idx} className={`forecast-item forecast-item--${day.level}`}>
+                              <div className="forecast-date">
+                                <span className="day-name">{day.dayName}</span>
+                                <span className="date-str">{day.date}</span>
+                              </div>
+                              <div className="forecast-weather">{day.weather}</div>
+                              <div className="forecast-temp">{day.temp.min}~{day.temp.max}°</div>
+                              <div className={`forecast-score ${day.score >= 70 ? 'good' : day.score >= 50 ? 'normal' : 'bad'}`}>
+                                {day.score}分
+                              </div>
+                              <div className="forecast-level">{day.level}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </>
               );
             })()}

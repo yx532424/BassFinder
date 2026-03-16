@@ -589,5 +589,178 @@
       margin-top: 4px;
       line-height: 1.4;
     }
+
+    .best-time-indicator {
+      width: 100%;
+      margin-top: 8px;
+      padding: 10px;
+      background: linear-gradient(135deg, rgba(72, 187, 120, 0.15), rgba(72, 187, 120, 0.08));
+      border: 1px solid rgba(72, 187, 120, 0.25);
+      border-radius: 8px;
+      
+      &.is-best {
+        background: linear-gradient(135deg, rgba(237, 137, 54, 0.2), rgba(237, 137, 54, 0.1));
+        border-color: rgba(237, 137, 54, 0.4);
+        animation: pulse-glow 2s ease-in-out infinite;
+      }
+      
+      .best-time-header {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 8px;
+        
+        .best-time-icon {
+          font-size: 14px;
+        }
+        
+        .best-time-title {
+          font-size: 12px;
+          font-weight: 600;
+          color: #48bb78;
+        }
+      }
+      
+      &.is-best .best-time-title {
+        color: #ed8936;
+      }
+      
+      .best-time-list {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        
+        .best-time-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          font-size: 11px;
+          
+          .best-time-slot {
+            color: rgba(255, 255, 255, 0.8);
+          }
+          
+          .best-time-score {
+            color: #48bb78;
+            font-weight: 600;
+          }
+        }
+      }
+      
+      .next-best-hint {
+        margin-top: 6px;
+        font-size: 10px;
+        color: rgba(255, 255, 255, 0.5);
+        text-align: center;
+      }
+    }
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(237, 137, 54, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(237, 137, 54, 0.5);
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+// 3天预报样式
+.forecast-section {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  
+  .forecast-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+    
+    .forecast-icon {
+      font-size: 14px;
+    }
+    
+    .forecast-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.85);
+    }
+  }
+  
+  .forecast-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    
+    .forecast-item {
+      display: grid;
+      grid-template-columns: 60px 50px 60px 50px 40px;
+      align-items: center;
+      padding: 8px 6px;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 6px;
+      font-size: 10px;
+      
+      &--极佳 {
+        border-left: 2px solid #48bb78;
+        background: rgba(72, 187, 120, 0.08);
+      }
+      &--良好 {
+        border-left: 2px solid #4299e1;
+      }
+      &--一般 {
+        border-left: 2px solid #ecc94b;
+      }
+      &--较差 {
+        border-left: 2px solid #fc8181;
+        opacity: 0.7;
+      }
+      
+      .forecast-date {
+        display: flex;
+        flex-direction: column;
+        
+        .day-name {
+          font-weight: 600;
+          color: #fff;
+        }
+        .date-str {
+          color: rgba(255, 255, 255, 0.5);
+          font-size: 9px;
+        }
+      }
+      
+      .forecast-weather {
+        color: rgba(255, 255, 255, 0.8);
+      }
+      
+      .forecast-temp {
+        color: rgba(255, 255, 255, 0.7);
+      }
+      
+      .forecast-score {
+        font-weight: 700;
+        &.good { color: #48bb78; }
+        &.normal { color: #ecc94b; }
+        &.bad { color: #fc8181; }
+      }
+      
+      .forecast-level {
+        font-size: 9px;
+        padding: 2px 4px;
+        border-radius: 3px;
+        text-align: center;
+      }
+    }
   }
 }

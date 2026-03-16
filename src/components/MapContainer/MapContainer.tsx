@@ -229,10 +229,19 @@ const MapContainer: React.FC<MapContainerProps> = ({
       {/* 钓点按钮 */}
       <button 
         className="spots-btn"
-        onClick={onSpotsClick}
+        onClick={() => onSpotsClick?.()}
         title="我的钓点"
       >
         📍
+      </button>
+
+      {/* 钓获按钮 */}
+      <button 
+        className="catch-btn"
+        onClick={onCatchClick}
+        title="钓获记录"
+      >
+        🎣
       </button>
     </div>
   );
