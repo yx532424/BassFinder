@@ -1,6 +1,7 @@
 /**
  * 地图服务 - 高德地图
- * 使用动态加载方式
+ * 使用 AMapLoader 2.0 方式加载
+ * 参考: https://lbs.amap.com/api/javascript-api-v2/getting-started
  */
 
 // 全局 AMap 加载器
@@ -8,7 +9,7 @@ declare global {
   interface Window {
     AMap: any;
     AMapUI: any;
-    _AMapSecurityConfig: any;
+    AMapLoader: any;
   }
 }
 
@@ -16,8 +17,11 @@ let amapInstance: any = null;
 let mapInstance: any = null;
 let loadPromise: Promise<any> | null = null;
 
+// 高德地图安全密钥 (需要去开放平台申请)
+const SECURITY_CODE = '';
+
 /**
- * 加载高德地图 SDK - 使用动态 script 加载
+ * 加载高德地图 SDK - 使用 AMapLoader.load()
  */
 function loadAMapScript(): Promise<any> {
   return new Promise((resolve, reject) => {
@@ -28,36 +32,38 @@ function loadAMapScript(): Promise<any> {
       return;
     }
 
-    // 设置安全配置
-    window._AMapSecurityConfig = {
-      securityJsCode: '',
+    // 加载 AMap Loader
+    const loaderScript = document.createElement('script');
+    loaderScript.src = 'https://webapi.amap.com/loader.js';
+    loaderScript.async = true;
+    
+    loaderScript.onload = () => {
+      console.log('[AMap] Loader 加载成功');
+      
+      // 使用 AMapLoader.load() 加载地图
+      AMapLoader.load({
+        key: '840bef19b8611f8b7054ddbba4bc6d32', // 应用Key
+        version: '2.0', // JS API 版本
+        plugins: ['AMap.Scale', 'AMap.ToolBar', 'AMap.Geolocation', 'AMap.Geocoder'], // 插件列表
+        securityJsCode: SECURITY_CODE, // 安全密钥
+      })
+        .then((AMap: any) => {
+          console.log('[AMap] SDK 加载成功');
+          amapInstance = AMap;
+          resolve(AMap);
+        })
+        .catch((error: Error) => {
+          console.error('[AMap] 加载失败:', error);
+          reject(error);
+        });
+    };
+    
+    loaderScript.onerror = (error) => {
+      console.error('[AMap] Loader 加载失败:', error);
+      reject(new Error('高德地图加载器失败'));
     };
 
-    // 创建 script 标签
-    const script = document.createElement('script');
-    script.src = 'https://webapi.amap.com/maps?v=2.0&key=840bef19b8611f8b7054ddbba4bc6d32&plugin=AMap.Scale,AMap.ToolBar,AMap.Geolocation,AMap.Geocoder';
-    script.async = true;
-    
-    script.onload = () => {
-      console.log('[AMap] 脚本加载成功');
-      // 等待 AMap 初始化
-      const checkAMap = () => {
-        if (window.AMap) {
-          amapInstance = window.AMap;
-          resolve(window.AMap);
-        } else {
-          setTimeout(checkAMap, 100);
-        }
-      };
-      checkAMap();
-    };
-    
-    script.onerror = (error) => {
-      console.error('[AMap] 脚本加载失败:', error);
-      reject(new Error('高德地图加载失败'));
-    };
-
-    document.head.appendChild(script);
+    document.head.appendChild(loaderScript);
   });
 }
 
