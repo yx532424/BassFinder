@@ -17,8 +17,8 @@ let amapInstance: any = null;
 let mapInstance: any = null;
 let loadPromise: Promise<any> | null = null;
 
-// 高德地图安全密钥 (需要去开放平台申请)
-const SECURITY_CODE = '';
+// 高德地图安全密钥
+const SECURITY_CODE = '82c94bbbfb6b4570506ba31e114fae3a';
 
 /**
  * 加载高德地图 SDK - 使用 AMapLoader.load()
@@ -42,7 +42,7 @@ function loadAMapScript(): Promise<any> {
       
       // 使用 AMapLoader.load() 加载地图
       AMapLoader.load({
-        key: '840bef19b8611f8b7054ddbba4bc6d32', // 应用Key
+        key: 'f97668d4b30212bd22a1a31c4663d7f3', // 应用Key
         version: '2.0', // JS API 版本
         plugins: ['AMap.Scale', 'AMap.ToolBar', 'AMap.Geolocation', 'AMap.Geocoder'], // 插件列表
         securityJsCode: SECURITY_CODE, // 安全密钥
