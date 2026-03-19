@@ -1,5 +1,5 @@
-import React from 'react';
-import { Search, RefreshCw, MapPin, User } from 'lucide-react';
+import React, { useState } from 'react';
+import { MapPin, Menu, Search, RefreshCw, User, Flame, LogOut } from 'lucide-react';
 import './Header.scss';
 
 interface HeaderProps {
@@ -25,6 +25,17 @@ const Header: React.FC<HeaderProps> = ({
   onSignInClick,
   offlineMode = false,
 }) => {
+  const [showMenu, setShowMenu] = useState(false);
+
+  const handleMenuClick = () => {
+    setShowMenu(!showMenu);
+  };
+
+  const handleMenuItemClick = (action: () => void) => {
+    action();
+    setShowMenu(false);
+  };
+
   return (
     <header className="header">
       {/* 离线模式提示 */}
@@ -44,39 +55,58 @@ const Header: React.FC<HeaderProps> = ({
       </div>
       
       <div className="header__right">
-        {isLoggedIn && signInDays > 0 && (
+        {/* 菜单按钮 */}
+        <div className="header__menu-wrapper">
           <button 
-            className="header__btn header__signin" 
-            onClick={onSignInClick}
-            title="签到"
+            className="header__btn header__menu-btn" 
+            onClick={handleMenuClick}
+            aria-label="菜单"
           >
-            <span className="signin-fire">🔥</span>
-            <span className="signin-days">{signInDays}</span>
+            <Menu size={22} />
           </button>
-        )}
-        <button 
-          className="header__btn" 
-          onClick={onSearchClick}
-          aria-label="搜索地点"
-        >
-          <Search size={20} />
-        </button>
-        <button 
-          className="header__btn" 
-          onClick={onRefreshClick}
-          disabled={isLoading}
-          aria-label="刷新数据"
-        >
-          <RefreshCw size={20} className={isLoading ? 'spin' : ''} />
-        </button>
-        <button 
-          className="header__btn header__user-btn" 
-          onClick={onUserClick}
-          aria-label="用户中心"
-        >
-          <User size={20} />
-        </button>
+          
+          {/* 下拉菜单 */}
+          {showMenu && (
+            <div className="header__menu-dropdown">
+              <button 
+                className="menu-item" 
+                onClick={() => handleMenuItemClick(onSearchClick)}
+              >
+                <Search size={18} />
+                <span>搜索地点</span>
+              </button>
+              <button 
+                className="menu-item" 
+                onClick={() => handleMenuItemClick(onRefreshClick)}
+                disabled={isLoading}
+              >
+                <RefreshCw size={18} className={isLoading ? 'spin' : ''} />
+                <span>刷新数据</span>
+              </button>
+              {isLoggedIn && signInDays > 0 && (
+                <button 
+                  className="menu-item" 
+                  onClick={() => handleMenuItemClick(onSignInClick!)}
+                >
+                  <Flame size={18} />
+                  <span>签到 ({signInDays}天)</span>
+                </button>
+              )}
+              <div className="menu-divider"></div>
+              <button 
+                className="menu-item" 
+                onClick={() => handleMenuItemClick(onUserClick!)}
+              >
+                {isLoggedIn ? <LogOut size={18} /> : <User size={18} />}
+                <span>{isLoggedIn ? '退出登录' : '登录/注册'}</span>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* 点击其他区域关闭菜单 */}
+      {showMenu && <div className="menu-overlay" onClick={() => setShowMenu(false)}></div>}
     </header>
   );
 };

@@ -1,5 +1,5 @@
-import React from 'react';
-import { Search, RefreshCw, MapPin, User, Download } from 'lucide-react';
+import React, { useState } from 'react';
+import { MapPin, Menu, Search, RefreshCw, User, Flame, LogOut } from 'lucide-react';
 import './Header.scss';
 
 interface HeaderProps {
@@ -12,9 +12,6 @@ interface HeaderProps {
   onUserClick?: () => void;
   onSignInClick?: () => void;
   offlineMode?: boolean;
-  onRankingClick?: () => void;
-  onCatchClick?: () => void;
-  onExportClick?: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -27,10 +24,18 @@ const Header: React.FC<HeaderProps> = ({
   onUserClick,
   onSignInClick,
   offlineMode = false,
-  onRankingClick,
-  onCatchClick,
-  onExportClick,
 }) => {
+  const [showMenu, setShowMenu] = useState(false);
+
+  const handleMenuClick = () => {
+    setShowMenu(!showMenu);
+  };
+
+  const handleMenuItemClick = (action: () => void) => {
+    action();
+    setShowMenu(false);
+  };
+
   return (
     <header className="header">
       {/* 离线模式提示 */}
@@ -50,58 +55,58 @@ const Header: React.FC<HeaderProps> = ({
       </div>
       
       <div className="header__right">
-        {isLoggedIn && (
+        {/* 菜单按钮 */}
+        <div className="header__menu-wrapper">
           <button 
-            className="header__btn header__signin" 
-            onClick={onSignInClick}
-            title="签到"
+            className="header__btn header__menu-btn" 
+            onClick={handleMenuClick}
+            aria-label="菜单"
           >
-            <span className="signin-badge">📅</span>
-            {signInDays > 0 && <span className="signin-days">{signInDays}天</span>}
+            <Menu size={22} />
           </button>
-        )}
-        
-        <button 
-          className="header__btn header__ranking" 
-          onClick={onRankingClick}
-          title="排行榜"
-        >
-          🏆
-        </button>
-
-        <button 
-          className="header__btn header__catch" 
-          onClick={onCatchClick}
-          title="钓获记录"
-        >
-          🎣
-        </button>
-
-        <button 
-          className="header__btn header__export" 
-          onClick={onExportClick}
-          title="导出数据"
-        >
-          📤
-        </button>
-        
-        <button 
-          className="header__btn header__refresh" 
-          onClick={onRefreshClick}
-          disabled={isLoading}
-          title="刷新"
-        >
-          <RefreshCw size={18} className={isLoading ? 'spinning' : ''} />
-        </button>
-        
-        <button 
-          className="header__btn header__user" 
-          onClick={onUserClick}
-          title="用户"
-        >
-          <User size={18} />
-        </button>
+          
+          {/* 下拉菜单 */}
+          {showMenu && (
+            <div className="header__menu-dropdown">
+              <button 
+                className="menu-item" 
+                onClick={() => handleMenuItemClick(onSearchClick)}
+              >
+                <Search size={18} />
+                <span>搜索地点</span>
+              </button>
+              <button 
+                className="menu-item" 
+                onClick={() => handleMenuItemClick(onRefreshClick)}
+                disabled={isLoading}
+              >
+                <RefreshCw size={18} className={isLoading ? 'spin' : ''} />
+                <span>刷新数据</span>
+              </button>
+              {isLoggedIn && signInDays > 0 && (
+                <button 
+                  className="menu-item" 
+                  onClick={() => handleMenuItemClick(onSignInClick!)}
+                >
+                  <Flame size={18} />
+                  <span>签到 ({signInDays}天)</span>
+                </button>
+              )}
+              <div className="menu-divider"></div>
+              <button 
+                className="menu-item" 
+                onClick={() => handleMenuItemClick(onUserClick!)}
+              >
+                {isLoggedIn ? <LogOut size={18} /> : <User size={18} />}
+                <span>{isLoggedIn ? '退出登录' : '登录/注册'}</span>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* 点击其他区域关闭菜单 */}
+      {showMenu && <div className="menu-overlay" onClick={() => setShowMenu(false)}></div>}
     </header>
   );
 };
